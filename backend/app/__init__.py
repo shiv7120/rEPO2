@@ -15,6 +15,7 @@ def create_app():
 	db_path = os.path.join(base_dir, '..', 'bank.db')
 	app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', f"sqlite:///{os.path.abspath(db_path)}")
 	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True}
 	app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-secret-change-me')
 	app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=8)
 
@@ -32,6 +33,11 @@ def create_app():
 	from .routes.accounts import accounts_bp
 	app.register_blueprint(auth_bp)
 	app.register_blueprint(accounts_bp)
+
+	# Health endpoint
+	@app.get('/api/health')
+	def health():
+		return jsonify({"status": "ok"})
 
 	# Error handlers
 	@app.errorhandler(404)
